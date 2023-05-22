@@ -25,8 +25,8 @@ class Article(models.Model):
     created_at = models.DateTimeField("생성일", auto_now_add=True)
     updated_at = models.DateTimeField("수정일", auto_now=True)
     image = models.ImageField("이미지", upload_to="article/%Y/%m/", blank=True)
-    likes = models.ManyToManyField(User, verbose_name="좋아요", blank=True, related_name='likes')
-    category = models.ForeignKey(Category, verbose_name="카테고리")
+    likes = models.ManyToManyField(User, verbose_name="좋아요", blank=True, related_name='like_articles')
+    category = models.ForeignKey(Category, verbose_name="카테고리", related_name="categorized_articles")
 
     class Meta:
         def __str__(self):
