@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 from rest_framework import status, permissions
-from articles.models import Article, Comment, Like
+from articles.models import Article, Comment
 from articles.serializers import (
     ArticleSerializer,
     ArticleDetailSerializer,
@@ -26,7 +26,12 @@ class ArticleView(APIView):
     """
 
     def post(self, request):
-        pass
+        serializer = ArticleSerializer(data=request.data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save(user=request.user)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 # articles/<int:article_id>/
@@ -36,7 +41,9 @@ class ArticleDetailView(APIView):
     """
 
     def get(self, request, article_id):
-        pass
+        article = get_object_or_404(Article, id=article_id)
+        serializer = ArticleDetailSerializer(article)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     """
     게시글 수정하기
@@ -50,7 +57,12 @@ class ArticleDetailView(APIView):
     """
 
     def delete(self, request, article_id):
-        pass
+        article = get_object_or_404(Article, id=article_id)
+        if article.user == request.user:
+            article.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 # articles/<int:article_id>/comments/
@@ -89,6 +101,7 @@ class CommentDetailView(APIView):
 
 # articles/<int:article_id>/like/
 class LikeView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
     """
     게시글 좋아요
     """
