@@ -6,7 +6,4 @@ class JorikingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Joriking
         fields = ["image",]
-        
-        
-        
-        
+      
