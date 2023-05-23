@@ -7,6 +7,7 @@ from articles.serializers import (
     ArticleSerializer,
     ArticleDetailSerializer,
     CommentSerializer,
+    CommentCreateSerializer,
 )
 
 
@@ -86,15 +87,24 @@ class CommentView(APIView):
     댓글 조회
     """
 
-    def get(self, request):
-        pass
+    def get(self, request, article_id):
+        article = get_object_or_404(Article, id=article_id)
+        comments = article.comments.all()
+        serializer = CommentSerializer(comments, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     """
     댓글 작성
     """
 
-    def post(self, request):
-        pass
+    def post(self, request, article_id):
+        article = get_object_or_404(Article, id=article_id)
+        serializer = CommentCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(article=article, user=request.user)
+            return Response(({"message": "댓글 작성 완료!"}, serializer.data), status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # articles/comments/<int:comment_id>/
