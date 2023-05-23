@@ -6,9 +6,11 @@ from . import views
 from django.urls import path
 
 urlpatterns = [
-    path('signup/', views.Signupview.as_view(), name='signup'),
-    path('mypage/', views.UserDetailView.as_view(), name='mypage_view'),
+    path('signup/', views.SignupView.as_view(), name='signup'),
+    path('mypage/', views.MypageView.as_view(), name='mypage'),
+    path('mock/', views.mockView.as_view(), name='mock_view'),
     path('login/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('follow/<int:user_id>/', views.FollowView.as_view(), name='follow_view'),
+    path('<int:user_id>/', views.UserView.as_view(), name='user_view'),
+    path('<int:user_id>/follow/', views.FollowView.as_view(), name='follow_view'),
 ]
