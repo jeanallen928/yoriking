@@ -59,8 +59,8 @@ class mockView(APIView):
         return Response("get 요청")
 
 
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
+# class CustomTokenObtainPairView(TokenObtainPairView):
+#     serializer_class = CustomTokenObtainPairSerializer
 
 
 class FollowView(APIView):
