@@ -7,11 +7,11 @@ class CommentSerializer(serializers.ModelSerializer):
     user = serializers.SerializerMethodField()
 
     def get_user(self, obj):
-        return obj.user.nickname
+        return {'nickname': obj.user.nickname, 'pk': obj.user.pk}
 
     class Meta:
         model = Comment
-        fields = "__all__"
+        exclude = ('article',)
 
 
 # 게시글 전체 목록 조회 및 게시글 작성/수정
@@ -21,7 +21,7 @@ class ArticleSerializer(serializers.ModelSerializer):
     like_count = serializers.SerializerMethodField()
     
     def get_user(self, obj):
-        return obj.user.nickname
+        return {'nickname': obj.user.nickname, 'pk': obj.user.pk}
     
     def get_comment_count(self, obj):
         return Comment.objects.filter(article=obj).count()
@@ -42,7 +42,7 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
     like_count = serializers.SerializerMethodField()
     
     def get_user(self, obj):
-        return obj.user.nickname
+        return {'nickname': obj.user.nickname, 'pk': obj.user.pk}
     
     def get_comment_count(self, obj):
         return Comment.objects.filter(article=obj).count()
