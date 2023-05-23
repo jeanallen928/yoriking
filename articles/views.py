@@ -1,7 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import status, permissions
+from rest_framework import status, permissions, viewsets
+from rest_framework.pagination import PageNumberPagination
 from articles.models import Article, Comment
 from articles.serializers import (
     ArticleSerializer,
@@ -9,6 +10,15 @@ from articles.serializers import (
     CommentSerializer,
     CommentCreateSerializer,
 )
+
+
+class ArticlesPaginationViewSet(viewsets.ModelViewSet):
+    """
+    페이지네이션
+    """
+    queryset = Article.objects.all().order_by("-created_at")
+    serializer_class = ArticleSerializer
+    pagination_class = PageNumberPagination
 
 
 # articles/
