@@ -12,6 +12,8 @@ from articles.serializers import (
 
 # articles/
 class ArticleView(APIView):
+    # 로그인한 사람은 작성 가능. 아니면 읽기만 가능.
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     """
     게시글 전체 목록 조회
     """
@@ -36,6 +38,8 @@ class ArticleView(APIView):
 
 # articles/<int:article_id>/
 class ArticleDetailView(APIView):
+    # 로그인한 사람은 수정/삭제 가능. 아니면 읽기만 가능.
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     """
     게시글 상세보기
     """
@@ -76,6 +80,8 @@ class ArticleDetailView(APIView):
 
 # articles/<int:article_id>/comments/
 class CommentView(APIView):
+    # 로그인한 사람은 작성 가능. 아니면 조회만 가능.
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     """
     댓글 조회
     """
@@ -93,6 +99,8 @@ class CommentView(APIView):
 
 # articles/comments/<int:comment_id>/
 class CommentDetailView(APIView):
+    # 로그인한 사람만 수정/삭제 가능
+    permission_classes = [permissions.IsAuthenticated]
     """
     댓글 수정
     """
@@ -110,6 +118,7 @@ class CommentDetailView(APIView):
 
 # articles/<int:article_id>/like/
 class LikeView(APIView):
+    # 로그인한 사람만 좋아요 가능
     permission_classes = [permissions.IsAuthenticated]
     """
     게시글 좋아요
