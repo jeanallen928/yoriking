@@ -13,7 +13,7 @@ from articles.serializers import (
 
 # articles/
 class ArticleView(APIView):
-    # 로그인한 사람은 작성 가능. 아니면 읽기만 가능.
+    # 로그인한 사람은 게시글 작성 가능. 아니면 게시글 전체 목록 조회만 가능.
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     """
     게시글 전체 목록 조회
@@ -39,7 +39,7 @@ class ArticleView(APIView):
 
 # articles/<int:article_id>/
 class ArticleDetailView(APIView):
-    # 로그인한 사람은 수정/삭제 가능. 아니면 읽기만 가능.
+    # 로그인한 사람은 게시글 수정/삭제 가능. 아니면 게시글 상세보기만 가능.
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     """
     게시글 상세보기
@@ -81,7 +81,7 @@ class ArticleDetailView(APIView):
 
 # articles/<int:article_id>/comments/
 class CommentView(APIView):
-    # 로그인한 사람은 작성 가능. 아니면 조회만 가능.
+    # 로그인한 사람은 댓글 작성 가능. 아니면 댓글 조회만 가능.
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     """
     댓글 조회
@@ -109,14 +109,21 @@ class CommentView(APIView):
 
 # articles/comments/<int:comment_id>/
 class CommentDetailView(APIView):
-    # 로그인한 사람만 수정/삭제 가능
+    # 로그인한 사람만 댓글 수정/삭제 가능
     permission_classes = [permissions.IsAuthenticated]
     """
     댓글 수정
     """
 
     def put(self, request, comment_id):
-        pass
+        comment = get_object_or_404(Comment, id=comment_id)
+        serializer = CommentCreateSerializer(comment, data=request.data)
+        if comment.user == request.user:
+            if serializer.is_valid():
+                serializer.save(user=request.user)
+                return Response(({"message": "댓글 수정 완료!"}, serializer.data), status=status.HTTP_200_OK)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     """
     댓글 삭제
