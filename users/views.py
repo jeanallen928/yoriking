@@ -47,17 +47,9 @@ class UserView(APIView):
             return Response({"message":"본인의 프로필만 삭제할 수 있습니다."}, status=status.HTTP_403_FORBIDDEN)
         
         user = request.user
-        user.delete()
+        user.is_active = False
         return Response({"message": "회원 탈퇴 완료!"}, status=status.HTTP_200_OK)
     
-
-class mockView(APIView):
-    permission_classes = [permissions.IsAuthenticated]
-    def get(self, request):
-        user = request.user
-        user.save()
-        return Response("get 요청")
-
 
 class FollowView(APIView):
     def post(self, request, user_id):
@@ -65,7 +57,7 @@ class FollowView(APIView):
         me = request.user
         if me in you.followers.all():
             you.followers.remove(me)
-            return Response({"언팔로우"}, status=status.HTTP_200_OK)
+            return Response({"message":"언팔로우"}, status=status.HTTP_200_OK)
         else:
             you.followers.add(me)
-            return Response({"팔로우"}, status=status.HTTP_200_OK)
+            return Response({"message":"팔로우"}, status=status.HTTP_200_OK)
