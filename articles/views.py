@@ -31,7 +31,7 @@ class ArticleView(APIView):
             serializer.save(user=request.user)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        return Response(({"message": "게시글 작성 완료!"}, serializer.data), status=status.HTTP_200_OK)
 
 
 # articles/<int:article_id>/
@@ -50,7 +50,16 @@ class ArticleDetailView(APIView):
     """
 
     def put(self, request, article_id):
-        pass
+        article = get_object_or_404(Article, id=article_id)
+        serializer = ArticleSerializer(article, data=request.data)
+        if article.user == request.user:
+            if serializer.is_valid():
+                serializer.save(user=request.user)
+                return Response(({"message": "게시글 수정 완료!"},serializer.data), status=status.HTTP_200_OK)
+            else:
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     """
     게시글 삭제하기
@@ -60,7 +69,7 @@ class ArticleDetailView(APIView):
         article = get_object_or_404(Article, id=article_id)
         if article.user == request.user:
             article.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({"message": "게시글 삭제 완료!"}, status=status.HTTP_204_NO_CONTENT)
         else:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
