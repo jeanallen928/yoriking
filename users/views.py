@@ -59,10 +59,6 @@ class mockView(APIView):
         return Response("get 요청")
 
 
-# class CustomTokenObtainPairView(TokenObtainPairView):
-#     serializer_class = CustomTokenObtainPairSerializer
-
-
 class FollowView(APIView):
     def post(self, request, user_id):
         you = get_object_or_404(User, id=user_id)
