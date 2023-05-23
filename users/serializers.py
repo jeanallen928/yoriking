@@ -20,12 +20,11 @@ class UserSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     followers = serializers.StringRelatedField(many=True, read_only = True)
     followings = serializers.StringRelatedField(many=True, read_only = True)
-    # article_set = ArticleListSerializer(many=True)
-    # like_articles = ArticleListSerializer(many=True)
+    # articles    
 
     class Meta:
         model = User
-        fields = ("nickname", "bio", "followings", "followers") # "article"
+        fields = ("nickname", "bio", "image", "followings", "followers") # "articles"
         
     
     def update(self, instance, validated_data):
