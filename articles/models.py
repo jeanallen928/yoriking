@@ -26,7 +26,7 @@ class Article(models.Model):
     updated_at = models.DateTimeField("수정시각", auto_now=True)
     image = models.ImageField("이미지", upload_to="article/%Y/%m/", blank=True)
     likes = models.ManyToManyField(User, verbose_name="좋아요", blank=True, related_name='like_articles')
-    category = models.ForeignKey(Category, verbose_name="카테고리", related_name="categorized_articles")
+    category = models.ForeignKey(Category, verbose_name="카테고리", related_name="categorized_articles", on_delete=models.CASCADE)
 
     
     def __str__(self):
