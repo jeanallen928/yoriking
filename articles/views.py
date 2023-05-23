@@ -123,7 +123,12 @@ class CommentDetailView(APIView):
     """
 
     def delete(self, request, comment_id):
-        pass
+        comment = get_object_or_404(Comment, id=comment_id)
+        if comment.user == request.user:
+            comment.delete()
+            return Response({"message": "댓글 삭제 완료!"}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
 
 
 # articles/<int:article_id>/like/
