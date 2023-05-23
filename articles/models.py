@@ -3,15 +3,8 @@ from users.models import User
 
 
 class Category(models.Model):
-    CATEGORIES = (
-        ('KOR', '한식'),
-        ('CHN', '중식'),
-        ('JPN', '일식'),
-        ('WES', '양식'),
-        ('ETC', '그외'),
-    )
     
-    food = models.CharField("음식", choices=CATEGORIES, max_length=3)
+    food = models.CharField("음식", max_length=50)
     
     def __str__(self):
         return self.food
@@ -26,7 +19,7 @@ class Article(models.Model):
     updated_at = models.DateTimeField("수정시각", auto_now=True)
     image = models.ImageField("이미지", upload_to="article/%Y/%m/", blank=True)
     likes = models.ManyToManyField(User, verbose_name="좋아요", blank=True, related_name='like_articles')
-    category = models.ForeignKey(Category, verbose_name="카테고리", related_name="categorized_articles", on_delete=models.CASCADE)
+    category = models.ForeignKey(Category, verbose_name="카테고리", null=True, related_name="categorized_articles", on_delete=models.SET_NULL)
 
     
     def __str__(self):
