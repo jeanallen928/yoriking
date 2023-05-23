@@ -20,7 +20,7 @@ class ArticleView(APIView):
     """
 
     def get(self, request):
-        articles = Article.objects.all()
+        articles = Article.objects.all().order_by("-created_at")
         serializer = ArticleSerializer(articles, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -89,7 +89,7 @@ class CommentView(APIView):
 
     def get(self, request, article_id):
         article = get_object_or_404(Article, id=article_id)
-        comments = article.comments.all()
+        comments = article.comments.all().order_by("-created_at")
         serializer = CommentSerializer(comments, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
