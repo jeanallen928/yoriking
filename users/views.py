@@ -48,6 +48,7 @@ class UserView(APIView):
         
         user = request.user
         user.is_active = False
+        user.save()
         return Response({"message": "회원 탈퇴 완료!"}, status=status.HTTP_200_OK)
     
 
