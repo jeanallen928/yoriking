@@ -41,7 +41,7 @@ class User(AbstractBaseUser):
 
     followings = models.ManyToManyField('self', symmetrical=False, blank=True, related_name="followers")
 
-    image = models.ImageField(upload_to='%Y/%m/%d/', null=True)
+    image = models.ImageField(upload_to='profile/%Y/%m/%d/', null=True)
 
     objects = UserManager()
 

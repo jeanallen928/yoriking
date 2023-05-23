@@ -13,6 +13,7 @@ class UserSerializer(serializers.ModelSerializer):
         user = super().create(validated_data)
         password = validated_data.get('password')
         user.set_password(password)
+        user.is_active = True
         user.save()
         return user
     
@@ -24,12 +25,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ("nickname", "bio", "image", "followings", "followers") # "articles"
-        
+        fields = ("nickname", "bio", "image", "followings", "followers") # "articles"        
     
     def update(self, instance, validated_data):
         user = super().update(instance, validated_data)
-        # password = validated_data.get('password')
+        # password = validated_data.get('password', instance.password)
         # user.set_password(password)
         user.save()
         return user
