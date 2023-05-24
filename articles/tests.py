@@ -115,6 +115,7 @@ class ArticleReadTest(APITestCase):
                 self.assertEqual(response.data[key], value)
 
 
+# view = ArticleDetailView, url name = "article_detail_view", method = delete
 class ArticleDeleteTest(APITestCase):
     
     @classmethod
@@ -142,7 +143,7 @@ class ArticleDeleteTest(APITestCase):
         self.another_user_token = self.client.post(reverse("token_obtain_pair"), self.another_user_data).data["access"]
 
 
-    # 게시글 삭제 성공
+    # 게시글 삭제 성공(204_NO_CONTENT)
     def test_pass_delete_article(self):
         response = self.client.delete(
             path = reverse("article_detail_view", kwargs={"article_id": 1}),
@@ -151,15 +152,15 @@ class ArticleDeleteTest(APITestCase):
         self.assertEqual(response.status_code, 204)
         
         
-    # 로그인 안하고 게시글 삭제 실패
-    def test_fail_if_not_logged_in(self):
+    # 로그인 안하고 게시글 삭제 실패(401_UNAUTHORIZED)
+    def test_fail_delete_article_if_not_logged_in(self):
         url = reverse("article_detail_view", kwargs={"article_id": 2})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, 401)
 
 
-    # 다른 사람의 게시글 삭제 실패
-    def test_fail_if_not_author(self):
+    # 다른 사람의 게시글 삭제 실패(401_UNAUTHORIZED)
+    def test_fail_delete_article_if_not_author(self):
         response = self.client.delete(
             path = reverse("article_detail_view", kwargs={"article_id": 3}),
             HTTP_AUTHORIZATION = f"Bearer {self.another_user_token}"
@@ -167,7 +168,7 @@ class ArticleDeleteTest(APITestCase):
         self.assertEqual(response.status_code, 401)
 
 
-    # 없는 게시글 삭제 실패
+    # 없는 게시글 삭제 실패(404_NOT_FOUND)
     def test_fail_delete_article_if_not_exist(self):
         response = self.client.delete(
             path = reverse("article_detail_view", kwargs={"article_id": 11}),
