@@ -1,5 +1,6 @@
 from django.db import models
 from users.models import User
+from django.urls import reverse
 # from django.db.models.signals import post_delete
 # from django.dispatch import receiver
 
@@ -23,6 +24,10 @@ class Article(models.Model):
     likes = models.ManyToManyField(User, verbose_name="좋아요", blank=True, related_name='like_articles')
     category = models.ForeignKey(Category, verbose_name="카테고리", null=True, related_name="categorized_articles", on_delete=models.SET_NULL)
 
+
+    def get_absolute_url(self):
+        return reverse('article_detail_view', kwargs={"article_id":self.id})
+    
     
     def __str__(self):
         return self.title
