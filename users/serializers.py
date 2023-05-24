@@ -34,6 +34,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "id",
             "nickname",
             "email",
+            "password",
             "bio",
             "image",
             "preference",
@@ -44,6 +45,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "followers",
             "articles"
             )
+        extra_kwargs = {
+            "password":{'write_only':True},
+        }
+        
 
     def get_followers(self, obj):
         followers_data = obj.followers.values('id', 'nickname', 'image')
@@ -71,10 +76,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
         return obj.articles.count()
 
     def update(self, instance, validated_data):
+        password = validated_data.pop('password', None)
         user = super().update(instance, validated_data)
-        user.save()
+        if password:
+            user.set_password(password)
+            user.save()
         return user
-    
+
     
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
