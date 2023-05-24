@@ -30,6 +30,7 @@ class ArticleCreateTest(APITestCase):
         cls.user = User.objects.create_user("test@test.com", "Test1234!")
 
     def setUp(self):
+        print(self.client.post(reverse("token_obtain_pair"), self.user_data).data)
         self.access_token = self.client.post(reverse("token_obtain_pair"), self.user_data).data["access"]
 
     # 테스트 후 이미지 파일 삭제하기
@@ -51,7 +52,7 @@ class ArticleCreateTest(APITestCase):
         self.assertEqual(Article.objects.get().title, "test Title")
 
 
-    # 이미지가 있는 게시글 작성
+    # 이미지가 있는 게시글 작성 성공
     def test_pass_create_posting_with_image(self):
         
         temp_file = tempfile.NamedTemporaryFile()  # 임시 파일 생성
@@ -97,14 +98,14 @@ class ArticleReadTest(APITestCase):
                 ))
 
 
-    # 게시글 전체 목록 조회
+    # 게시글 전체 목록 조회 성공
     # view = ArticleView, url name = "article_view", method = get
     def test_pass_article_list(self):
         response = self.client.get(path=reverse("article_view"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-    # 게시글 상세 보기(10개 테스트)
+    # 게시글 상세 보기(10개 테스트) 성공
     # view = ArticleDetailView, url name = "article_detail_view", method = get
     def test_pass_article_detail(self):
         for article in self.articles:
@@ -113,3 +114,4 @@ class ArticleReadTest(APITestCase):
             serializer = ArticleDetailSerializer(article).data
             for key, value in serializer.items():
                 self.assertEqual(response.data[key], value)
+                      
