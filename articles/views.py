@@ -44,7 +44,7 @@ class ArticleView(APIView):
             serializer.save(user=request.user)
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        return Response(({"message": "게시글 작성 완료!"}, serializer.data), status=status.HTTP_200_OK)
+        return Response(({"message": "게시글 작성 완료!"}, serializer.data), status=status.HTTP_201_CREATED)
 
 
 # articles/<int:article_id>/
