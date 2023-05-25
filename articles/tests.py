@@ -30,7 +30,6 @@ class ArticleCreateTest(APITestCase):
         cls.user = User.objects.create_user("test@test.com", "Test1234!")
 
     def setUp(self):
-        print(self.client.post(reverse("token_obtain_pair"), self.user_data).data)
         self.access_token = self.client.post(reverse("token_obtain_pair"), self.user_data).data["access"]
 
     # 테스트 후 이미지 파일 삭제하기
@@ -53,7 +52,7 @@ class ArticleCreateTest(APITestCase):
 
 
     # 이미지가 있는 게시글 작성 성공
-    def test_pass_create_posting_with_image(self):
+    def test_pass_create_article_with_image(self):
         
         temp_file = tempfile.NamedTemporaryFile()  # 임시 파일 생성
         temp_file.name = "image.png"  # 임시 파일 이름 지정
@@ -114,4 +113,66 @@ class ArticleReadTest(APITestCase):
             serializer = ArticleDetailSerializer(article).data
             for key, value in serializer.items():
                 self.assertEqual(response.data[key], value)
-                      
+
+
+# view = ArticleDetailView, url name = "article_detail_view", method = delete
+class ArticleDeleteTest(APITestCase):
+    
+    @classmethod
+    def setUpTestData(cls):
+        cls.user_data = {"email": "test1@test.com", "password": "password"}
+        cls.user = User.objects.create_user("test1@test.com", "password")
+        
+        cls.another_user_data = {"email": "else1@test.com", "password": "password"}
+        cls.another_user = User.objects.create(email="else1@test.com", password="password", nickname="someone")
+        cls.another_user.set_password("password")
+        cls.another_user.save()
+        
+        cls.faker = Faker()
+        cls.articles=[]
+        for i in range(10):
+            cls.articles.append(Article.objects.create(
+                title=cls.faker.sentence(), 
+                content=cls.faker.text(), 
+                user=cls.user
+                ))
+    
+
+    def setUp(self):
+        self.user_token = self.client.post(reverse("token_obtain_pair"), self.user_data).data["access"]
+        self.another_user_token = self.client.post(reverse("token_obtain_pair"), self.another_user_data).data["access"]
+
+
+    # 게시글 삭제 성공(204_NO_CONTENT)
+    def test_pass_delete_article(self):
+        response = self.client.delete(
+            path = reverse("article_detail_view", kwargs={"article_id": 1}),
+            HTTP_AUTHORIZATION = f"Bearer {self.user_token}"
+        )
+        self.assertEqual(response.status_code, 204)
+        
+        
+    # 로그인 안하고 게시글 삭제 실패(401_UNAUTHORIZED)
+    def test_fail_delete_article_if_not_logged_in(self):
+        url = reverse("article_detail_view", kwargs={"article_id": 2})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, 401)
+
+
+    # 다른 사람의 게시글 삭제 실패(401_UNAUTHORIZED)
+    def test_fail_delete_article_if_not_author(self):
+        response = self.client.delete(
+            path = reverse("article_detail_view", kwargs={"article_id": 3}),
+            HTTP_AUTHORIZATION = f"Bearer {self.another_user_token}"
+        )
+        self.assertEqual(response.status_code, 401)
+
+
+    # 없는 게시글 삭제 실패(404_NOT_FOUND)
+    def test_fail_delete_article_if_not_exist(self):
+        response = self.client.delete(
+            path = reverse("article_detail_view", kwargs={"article_id": 11}),
+            HTTP_AUTHORIZATION = f"Bearer {self.user_token}"
+        )
+        self.assertEqual(response.status_code, 404)
+        
