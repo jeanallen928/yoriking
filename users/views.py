@@ -29,8 +29,11 @@ class MypageView(APIView):
 class UserView(APIView):
     def get(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
-        serializer = UserProfileSerializer(user)
-        return Response(serializer.data)
+        if user.is_active == True:
+            serializer = UserProfileSerializer(user)
+            return Response(serializer.data)
+        else :
+            return Response({"message":"탈퇴한 회원입니다."}, status=status.HTTP_403_FORBIDDEN)
 
     def put(self, request, user_id):
         if user_id != request.user.id:

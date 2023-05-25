@@ -51,11 +51,11 @@ class UserProfileSerializer(serializers.ModelSerializer):
         
 
     def get_followers(self, obj):
-        followers_data = obj.followers.values('id', 'nickname', 'image')
+        followers_data = obj.followers.values('id', 'nickname', 'image', 'email')
         return followers_data
     
     def get_followings(self, obj):
-        followings_data = obj.followings.values('id', 'nickname', 'image')
+        followings_data = obj.followings.values('id', 'nickname', 'image', 'email')
         return followings_data
     
     def get_articles(self, obj):
