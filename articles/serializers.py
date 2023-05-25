@@ -24,7 +24,7 @@ class ArticleSerializer(serializers.ModelSerializer):
         return {'nickname': obj.user.nickname, 'pk': obj.user.pk}
     
     def get_comment_count(self, obj):
-        return Comment.objects.filter(article=obj).count()
+        return obj.comments.count()
 
     def get_like_count(self, obj):
         return obj.likes.count()
@@ -45,7 +45,7 @@ class ArticleDetailSerializer(serializers.ModelSerializer):
         return {'nickname': obj.user.nickname, 'pk': obj.user.pk}
     
     def get_comment_count(self, obj):
-        return Comment.objects.filter(article=obj).count()
+        return obj.comments.count()
 
     def get_like_count(self, obj):
         return obj.likes.count()
