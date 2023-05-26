@@ -7,7 +7,6 @@ from rest_framework_simplejwt.views import (
 from rest_framework.generics import get_object_or_404
 from users.serializers import CustomTokenObtainPairSerializer, UserSerializer, UserProfileSerializer
 from . models import User
-from rest_framework.permissions import AllowAny
 import requests
 
 
@@ -33,7 +32,7 @@ class UserView(APIView):
             serializer = UserProfileSerializer(user)
             return Response(serializer.data)
         else :
-            return Response({"message":"탈퇴한 회원입니다."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"message":"탈퇴한 회원입니다."}, status=status.HTTP_404_NOT_FOUND)
 
     def put(self, request, user_id):
         if user_id != request.user.id:
@@ -61,6 +60,9 @@ class FollowView(APIView):
     def post(self, request, user_id):
         you = get_object_or_404(User, id=user_id)
         me = request.user
+        if you.id == me.id:
+            return Response({"message": "본인을 팔로우 할 수 없습니다."}, status=status.HTTP_403_FORBIDDEN)
+
         if me in you.followers.all():
             you.followers.remove(me)
             return Response({"message":"언팔로우"}, status=status.HTTP_200_OK)
@@ -70,15 +72,13 @@ class FollowView(APIView):
 
 
 class KakaoLoginView(APIView):
-    permission_classes = [AllowAny]
-
     def post(self, request):
         try:
             access_token = request.data["access_token"]
             account_info = requests.get(
                 "https://kapi.kakao.com/v2/user/me", headers={"Authorization":f"Bearer {access_token}"}).json()
             email = account_info["kakao_account"]["email"]
-            profile_image = account_info["properties"]["profile_image"] 
+            profile_image = account_info["properties"]["profile_image"]
 
             if User.objects.filter(email=email).exists():
                 account = User.objects.get(email=email)
