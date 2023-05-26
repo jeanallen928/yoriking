@@ -2,28 +2,11 @@ from rest_framework import serializers
 from users.models import User
 
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from articles.serializers import ArticleSerializer
-
-
-class UserSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = "__all__"
-
-    def create(self, validated_data):
-        user = super().create(validated_data)
-        password = validated_data.get('password')
-        user.set_password(password)
-        user.is_active = True
-        user.save()
-        return user
     
     
 class UserProfileSerializer(serializers.ModelSerializer):
     followers = serializers.SerializerMethodField()
-    followings = serializers.SerializerMethodField()    
-    articles = serializers.SerializerMethodField()
-    
+    followings = serializers.SerializerMethodField()  
     follower_count = serializers.SerializerMethodField()
     following_count = serializers.SerializerMethodField()
     article_count = serializers.SerializerMethodField()
@@ -37,7 +20,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "password",
             "bio",
             "image",
-            "preference",
             "article_count",
             "following_count",
             "follower_count",
@@ -57,14 +39,6 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_followings(self, obj):
         followings_data = obj.followings.values('id', 'nickname', 'image', 'email')
         return followings_data
-    
-    def get_articles(self, obj):
-        articles = obj.articles.all()
-        article_data = ArticleSerializer(articles, many=True).data
-        for article in article_data:
-            article.pop('likes', None)
-            article.pop('content', None)
-        return article_data
     
     def get_follower_count(self, obj):
         return obj.followers.count()

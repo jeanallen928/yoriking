@@ -165,7 +165,7 @@ class ArticleDeleteTest(APITestCase):
             path = reverse("article_detail_view", kwargs={"article_id": 3}),
             HTTP_AUTHORIZATION = f"Bearer {self.another_user_token}"
         )
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 403)
 
 
     # 없는 게시글 삭제 실패(404_NOT_FOUND)

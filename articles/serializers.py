@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from articles.models import Article, Comment
+
+from .models import Article, Comment
 
 
 # 댓글 조회

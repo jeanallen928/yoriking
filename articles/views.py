@@ -1,8 +1,9 @@
 from rest_framework.views import APIView
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
-from rest_framework import status, permissions, viewsets
 from rest_framework.pagination import PageNumberPagination
+from rest_framework import status, permissions, viewsets
+
 from articles.models import Article, Comment
 from articles.serializers import (
     ArticleSerializer,
@@ -74,7 +75,7 @@ class ArticleDetailView(APIView):
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"message": "권한이 없습니다."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"message": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
     """
     게시글 삭제하기
@@ -86,7 +87,7 @@ class ArticleDetailView(APIView):
             article.delete()
             return Response({"message": "게시글 삭제 완료!"}, status=status.HTTP_204_NO_CONTENT)
         else:
-            return Response({"message": "권한이 없습니다."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"message": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
 
 # articles/<int:article_id>/comments/
@@ -133,7 +134,7 @@ class CommentDetailView(APIView):
                 serializer.save(user=request.user)
                 return Response(({"message": "댓글 수정 완료!"}, serializer.data), status=status.HTTP_200_OK)
         else:
-            return Response({"message": "권한이 없습니다."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"message": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
     """
     댓글 삭제
@@ -145,7 +146,7 @@ class CommentDetailView(APIView):
             comment.delete()
             return Response({"message": "댓글 삭제 완료!"}, status=status.HTTP_204_NO_CONTENT)
         else:
-            return Response({"message": "권한이 없습니다."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"message": "권한이 없습니다."}, status=status.HTTP_403_FORBIDDEN)
 
 
 # articles/<int:article_id>/like/

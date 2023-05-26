@@ -6,8 +6,8 @@ from .serializers import JorikingSerializer
 from .models import Joriking
 
 from ultralytics import YOLO
-import cv2
 import openai
+import cv2
 import os
 
 openai.api_key = os.environ.get("openai_api_key")
