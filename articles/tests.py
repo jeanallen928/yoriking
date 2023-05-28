@@ -128,7 +128,7 @@ class ArticleUpdateTest(APITestCase):
         cls.articles=[]
         for i in range(10):
             cls.articles.append(Article.objects.create(
-                title=cls.faker.sentence(), 
+                title=cls.faker.word(), 
                 content=cls.faker.text(),
                 user=cls.user
                 ))
@@ -136,7 +136,7 @@ class ArticleUpdateTest(APITestCase):
         cls.new_articles=[]
         for i in range(10):
             cls.new_articles.append({
-                "title": cls.faker.sentence(), 
+                "title": cls.faker.word(), 
                 "content": cls.faker.text(),
                 })
 
@@ -229,4 +229,48 @@ class ArticleDeleteTest(APITestCase):
             HTTP_AUTHORIZATION = f"Bearer {self.user_token}"
         )
         self.assertEqual(response.status_code, 404)
+        
+
+# view = LikeView, url name = "like_view", method = post
+class LikeTest(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user_data = {"email": "test@test.com", "password": "Test1234!"}
+        cls.article_data = {"title": "test Title", "content": "test content"}
+        cls.user = User.objects.create(
+            email=cls.user_data["email"], 
+            password=cls.user_data["password"], 
+            nickname="test"
+            )
+        cls.user.set_password(cls.user_data["password"])
+        cls.user.save()
+        cls.article = Article.objects.create(**cls.article_data, user=cls.user)
+
+    def setUp(self):
+        self.access_token = self.client.post(
+            reverse("token_obtain_pair"), self.user_data
+        ).data["access"]
+
+    
+    def test_pass_like_article(self):
+        
+        # 좋아요
+        response = self.client.post(
+            path=reverse("like_view", kwargs={"article_id": 1}),
+            HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
+        )
+        serializer = ArticleDetailSerializer(self.article).data
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'message': "좋아요"})
+        self.assertEqual(serializer["like_count"], 1)
+        
+        # 좋아요 취소
+        response = self.client.post(
+            path=reverse("like_view", kwargs={"article_id": 1}),
+            HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
+        )
+        serializer = ArticleDetailSerializer(self.article).data
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data, {'message': "좋아요 취소"})
+        self.assertEqual(serializer["like_count"], 0)
         
