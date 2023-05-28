@@ -298,7 +298,7 @@ class CommentCreateTest(APITestCase):
             reverse("token_obtain_pair"), self.user_data
         ).data["access"]
 
-    # 코멘트 작성
+    # 댓글 작성
     def test_pass_create_comment(self):
         response = self.client.post(
             path=reverse("comment_view", kwargs={"article_id": 1}),
@@ -308,3 +308,48 @@ class CommentCreateTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Comment.objects.count(), 1)
         self.assertEqual(Comment.objects.get().content, "test comment content")
+
+
+# view = CommentView, url name = "comment_view", method = get
+class CommentReadTest(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.article_author_data = {"email": "test@test.com", "password": "Test1234!"}
+        cls.article_author = User.objects.create(
+            email=cls.article_author_data["email"], 
+            password=cls.article_author_data["password"], 
+            nickname="test"
+            )
+        cls.article_author.set_password(cls.article_author_data["password"])
+        cls.article_author.save()
+        
+        cls.article_data = {"title": "test Title", "content": "test content"}
+        cls.article = Article.objects.create(**cls.article_data, user=cls.article_author)
+        
+        cls.faker = Faker()
+        cls.comments=[]
+        for i in range(10):
+            cls.user = User.objects.create(
+                email=cls.faker.unique.email(), 
+                password=cls.faker.word(), 
+                nickname=cls.faker.unique.name()
+                )
+            cls.comments.append(Comment.objects.create(
+                content=cls.faker.text(),
+                article=cls.article,
+                user=cls.user
+                ))
+
+
+    # 특정 게시글의 댓글 리스트 모두 보기(10개) 성공
+    def test_pass_comment_list(self):
+        
+        response = self.client.get(path=reverse("comment_view", kwargs={"article_id": 1}))
+        
+        # 댓글 조회 요청(200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        
+        # 댓글 정보 최신순으로
+        for i in range(10):
+            self.assertEqual(response.data[i]["content"], self.comments[-(i+1)].content)
+            
