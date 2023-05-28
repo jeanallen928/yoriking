@@ -9,7 +9,7 @@ import tempfile, random
 from faker import Faker
 
 from users.models import User
-from articles.models import Article
+from articles.models import Article, Comment
 from articles.serializers import ArticleDetailSerializer, ArticleSerializer
 
 
@@ -273,4 +273,38 @@ class LikeTest(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data, {'message': "좋아요 취소"})
         self.assertEqual(serializer["like_count"], 0)
+
+
+# view = CommentView, url name = "comment_view", method = post
+class CommentCreateTest(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user_data = {"email": "test@test.com", "password": "Test1234!"}
+        cls.user = User.objects.create(
+            email=cls.user_data["email"], 
+            password=cls.user_data["password"], 
+            nickname="test"
+            )
+        cls.user.set_password(cls.user_data["password"])
+        cls.user.save()
         
+        cls.article_data = {"title": "test Title", "content": "test content"}
+        cls.comment_data = {"content": "test comment content"}
+        
+        cls.article = Article.objects.create(**cls.article_data, user=cls.user)
+
+    def setUp(self):
+        self.access_token = self.client.post(
+            reverse("token_obtain_pair"), self.user_data
+        ).data["access"]
+
+    # 코멘트 작성
+    def test_pass_create_comment(self):
+        response = self.client.post(
+            path=reverse("comment_view", kwargs={"article_id": 1}),
+            data=self.comment_data,
+            HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
+        )
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(Comment.objects.count(), 1)
+        self.assertEqual(Comment.objects.get().content, "test comment content")
