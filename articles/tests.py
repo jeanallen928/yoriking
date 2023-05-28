@@ -4,13 +4,13 @@ from rest_framework import status
 # 이미지
 from django.test.client import MULTIPART_CONTENT, encode_multipart, BOUNDARY
 from PIL import Image
-import tempfile
+import tempfile, random
 
 from faker import Faker
 
 from users.models import User
 from articles.models import Article
-from articles.serializers import ArticleDetailSerializer
+from articles.serializers import ArticleDetailSerializer, ArticleSerializer
 
 
 def get_temporary_image(temp_file):
@@ -115,6 +115,60 @@ class ArticleReadTest(APITestCase):
                 self.assertEqual(response.data[key], value)
 
 
+# view = ArticleDetailView, url name = "article_detail_view", method = put
+class ArticleUpdateTest(APITestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user_data = {"email": "test@test.com", "password": "Test1234!"}
+        cls.user = User.objects.create(email="test@test.com", password="Test1234!", nickname="test")
+        cls.user.set_password(cls.user_data["password"])
+        cls.user.save()
+        
+        cls.faker = Faker()
+        cls.articles=[]
+        for i in range(10):
+            cls.articles.append(Article.objects.create(
+                title=cls.faker.sentence(), 
+                content=cls.faker.text(),
+                user=cls.user
+                ))
+        
+        cls.new_articles=[]
+        for i in range(10):
+            cls.new_articles.append({
+                "title": cls.faker.sentence(), 
+                "content": cls.faker.text(),
+                })
+
+    def setUp(self):
+        self.access_token = self.client.post(reverse("token_obtain_pair"), self.user_data).data["access"]    
+    
+    # 게시글 수정 성공(NOT NULL(title, content))
+    def test_pass_update_article(self):
+        for i in range(10):
+            url = self.articles[i].get_absolute_url()
+            response = self.client.put(
+                path=url, 
+                data=self.new_articles[i],
+                HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
+                )
+            
+            # 게시글 수정 성공(200_OK)
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            
+            updated_article = Article.objects.create(
+                user=self.user, 
+                title=self.new_articles[i]["title"], 
+                content=self.new_articles[i]["content"]
+                )
+            
+            serializer = ArticleSerializer(updated_article).data
+            
+            # 게시글 수정 됐는지
+            self.assertEqual(response.data[1]["title"], serializer["title"])
+            self.assertEqual(response.data[1]["content"], serializer["content"])
+
+
 # view = ArticleDetailView, url name = "article_detail_view", method = delete
 class ArticleDeleteTest(APITestCase):
     
@@ -159,7 +213,7 @@ class ArticleDeleteTest(APITestCase):
         self.assertEqual(response.status_code, 401)
 
 
-    # 다른 사람의 게시글 삭제 실패(401_UNAUTHORIZED)
+    # 다른 사람의 게시글 삭제 실패(403_FORBIDDEN)
     def test_fail_delete_article_if_not_author(self):
         response = self.client.delete(
             path = reverse("article_detail_view", kwargs={"article_id": 3}),
