@@ -190,7 +190,8 @@ class ArticleDeleteTest(APITestCase):
                 content=cls.faker.text(), 
                 user=cls.user
                 ))
-    
+        
+        Article.objects.filter(id=5).delete()
 
     def setUp(self):
         self.user_token = self.client.post(reverse("token_obtain_pair"), self.user_data).data["access"]
@@ -225,7 +226,7 @@ class ArticleDeleteTest(APITestCase):
     # 없는 게시글 삭제 실패(404_NOT_FOUND)
     def test_fail_delete_article_if_not_exist(self):
         response = self.client.delete(
-            path = reverse("article_detail_view", kwargs={"article_id": 11}),
+            path = reverse("article_detail_view", kwargs={"article_id": 5}),
             HTTP_AUTHORIZATION = f"Bearer {self.user_token}"
         )
         self.assertEqual(response.status_code, 404)
@@ -245,34 +246,55 @@ class LikeTest(APITestCase):
         cls.user.set_password(cls.user_data["password"])
         cls.user.save()
         cls.article = Article.objects.create(**cls.article_data, user=cls.user)
+        
+        cls.faker = Faker()
+        cls.viewers_data = []
+        cls.viewers = []
+        for i in range(10):
+            cls.viewer_data = {
+                "email": f"{cls.faker.unique.email()}",
+                "password": f"{cls.faker.word()}"
+            }
+            cls.viewers_data.append(cls.viewer_data)
+            cls.viewer = User.objects.create(**cls.viewer_data, nickname=cls.faker.unique.name())
+            cls.viewer.set_password(cls.viewer_data["password"])
+            cls.viewer.save()
+            cls.viewers.append(cls.viewer)                    
 
     def setUp(self):
         self.access_token = self.client.post(
             reverse("token_obtain_pair"), self.user_data
         ).data["access"]
+        self.viewer_tokens = []
+        for i in range(10):
+            self.viewer_tokens.append(self.client.post(
+            reverse("token_obtain_pair"), self.viewers_data[i]
+            ).data["access"])
 
     
     def test_pass_like_article(self):
         
         # 좋아요
-        response = self.client.post(
-            path=reverse("like_view", kwargs={"article_id": 1}),
-            HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
-        )
-        serializer = ArticleDetailSerializer(self.article).data
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {'message': "좋아요"})
-        self.assertEqual(serializer["like_count"], 1)
+        for i in range(10):
+            response = self.client.post(
+                path=reverse("like_view", kwargs={"article_id": 1}),
+                HTTP_AUTHORIZATION=f"Bearer {self.viewer_tokens[i]}",
+            )
+            serializer = ArticleDetailSerializer(self.article).data
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data, {'message': "좋아요"})
+            self.assertEqual(serializer["like_count"], i+1)
         
         # 좋아요 취소
-        response = self.client.post(
-            path=reverse("like_view", kwargs={"article_id": 1}),
-            HTTP_AUTHORIZATION=f"Bearer {self.access_token}",
-        )
-        serializer = ArticleDetailSerializer(self.article).data
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, {'message': "좋아요 취소"})
-        self.assertEqual(serializer["like_count"], 0)
+        for i in range(10):
+            response = self.client.post(
+                path=reverse("like_view", kwargs={"article_id": 1}),
+                HTTP_AUTHORIZATION=f"Bearer {self.viewer_tokens[i]}",
+            )
+            serializer = ArticleDetailSerializer(self.article).data
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            self.assertEqual(response.data, {'message': "좋아요 취소"})
+            self.assertEqual(serializer["like_count"], 9-i)
 
 
 # view = CommentView, url name = "comment_view", method = post
@@ -352,4 +374,6 @@ class CommentReadTest(APITestCase):
         # 댓글 정보 최신순으로
         for i in range(10):
             self.assertEqual(response.data[i]["content"], self.comments[-(i+1)].content)
+            self.assertEqual(response.data[i]["user"]["nickname"], self.comments[-(i+1)].user.nickname)
+            # print(f"{i}", response.data[i]["user"]["nickname"], f"{-(i+1)}", self.comments[-(i+1)].user.nickname)
             
