@@ -375,5 +375,4 @@ class CommentReadTest(APITestCase):
         for i in range(10):
             self.assertEqual(response.data[i]["content"], self.comments[-(i+1)].content)
             self.assertEqual(response.data[i]["user"]["nickname"], self.comments[-(i+1)].user.nickname)
-            # print(f"{i}", response.data[i]["user"]["nickname"], f"{-(i+1)}", self.comments[-(i+1)].user.nickname)
             
