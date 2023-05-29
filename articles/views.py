@@ -162,7 +162,7 @@ class LikeView(APIView):
         article = get_object_or_404(Article, id = article_id)
         if request.user in article.likes.all():
             article.likes.remove(request.user)
-            return Response({"massage":"좋아요 취소"}, status=status.HTTP_200_OK)
+            return Response({"message":"좋아요 취소"}, status=status.HTTP_200_OK)
         else:
             article.likes.add(request.user)
-            return Response({"massage":"좋아요"}, status=status.HTTP_200_OK)
+            return Response({"message":"좋아요"}, status=status.HTTP_200_OK)
